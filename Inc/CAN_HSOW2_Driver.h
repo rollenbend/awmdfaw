@@ -10,8 +10,9 @@
 
 #include "main.h"
 
-void HSOW2_CAN_Transmit(uint8_t *AccGyroData);
 
+void HSOW2_CAN_Transmit(uint8_t *AccGyroData, uint16_t Size);
+void HSOW2_CAN_Init(void);
 
 
 

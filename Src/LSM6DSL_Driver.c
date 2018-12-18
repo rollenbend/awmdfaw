@@ -19,7 +19,7 @@ void LSM6DSL_Read_data(void)
 	HAL_SPI_Receive(&hspi1, accgyrodata, 12, 0x100);
 	HAL_GPIO_WritePin(SPI_CS_GPIO_Port, SPI_CS_Pin, ENABLE);
 
-	HSOW2_CAN_Transmit(accgyrodata);
+	HSOW2_CAN_Transmit(accgyrodata, sizeof(accgyrodata));
 
 	if (++LED_Turn_Count%20==0) HAL_GPIO_TogglePin(BLUE_IMU_GPIO_Port, BLUE_IMU_Pin);
 }

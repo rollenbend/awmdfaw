@@ -123,7 +123,7 @@ int main(void)
   if (Is_this_LSM6DSL()!=1) {
 	  Got_Error();
   }
-
+  HSOW2_CAN_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -193,15 +193,15 @@ static void MX_CAN_Init(void)
   hcan.Instance = CAN;
   hcan.Init.Prescaler = 2;
   hcan.Init.Mode = CAN_MODE_NORMAL;
-  hcan.Init.SyncJumpWidth = CAN_SJW_2TQ;
+  hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
   hcan.Init.TimeSeg1 = CAN_BS1_13TQ;
   hcan.Init.TimeSeg2 = CAN_BS2_2TQ;
-  hcan.Init.TimeTriggeredMode = DISABLE;
+  hcan.Init.TimeTriggeredMode = ENABLE;
   hcan.Init.AutoBusOff = DISABLE;
   hcan.Init.AutoWakeUp = DISABLE;
   hcan.Init.AutoRetransmission = DISABLE;
   hcan.Init.ReceiveFifoLocked = DISABLE;
-  hcan.Init.TransmitFifoPriority = ENABLE;
+  hcan.Init.TransmitFifoPriority = DISABLE;
   if (HAL_CAN_Init(&hcan) != HAL_OK)
   {
     Error_Handler();
