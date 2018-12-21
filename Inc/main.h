@@ -54,6 +54,8 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "LSM6DSL_Driver.h"
 #include "CAN_HSOW2_Driver.h"
+#include "HSOW2_Way.h"
+#include "HSOW2_Math.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -81,6 +83,12 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define WARNING_Pin GPIO_PIN_1
 #define WARNING_GPIO_Port GPIOA
+#define SPI_INT2_Pin GPIO_PIN_2
+#define SPI_INT2_GPIO_Port GPIOA
+#define SPI_INT2_EXTI_IRQn EXTI2_TSC_IRQn
+#define SPI_INT1_Pin GPIO_PIN_3
+#define SPI_INT1_GPIO_Port GPIOA
+#define SPI_INT1_EXTI_IRQn EXTI3_IRQn
 #define SPI_CS_Pin GPIO_PIN_4
 #define SPI_CS_GPIO_Port GPIOA
 #define BLUE_IMU_Pin GPIO_PIN_0

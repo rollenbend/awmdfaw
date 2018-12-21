@@ -7,21 +7,37 @@
 
 #include "CAN_HSOW2_Driver.h"
 extern CAN_HandleTypeDef hcan;
-uint32_t can_tx_mailbox[3] = {CAN_TX_MAILBOX0, CAN_TX_MAILBOX1, CAN_TX_MAILBOX2};
+extern DppTimSampleTypeDef DppStruct;
+extern AveragesAccTypeDef  AverageAcc;
+extern PumpsTypeDef        Pumps;
 uint32_t CAN_LED_Turn_Count=0;
 
 void HSOW2_CAN_Transmit(uint8_t *AccGyroData, uint16_t Size)
 {
 	CAN_TxHeaderTypeDef txheader;
-	txheader.StdId = 0x0cc;
-	txheader.DLC = 8;
+	uint32_t can_tx_mailbox = CAN_TX_MAILBOX0;//[3] = {CAN_TX_MAILBOX0, CAN_TX_MAILBOX1, CAN_TX_MAILBOX2};
+
+	if (AccGyroData == (uint8_t*)&DppStruct) {
+		txheader.StdId = DPP_Frame_StdId;
+		can_tx_mailbox = CAN_TX_MAILBOX0;
+	}
+	else if (AccGyroData == (uint8_t*)&AverageAcc) {
+		txheader.StdId = Acc_Frame_StdId;
+		can_tx_mailbox = CAN_TX_MAILBOX1;
+	}
+	else if (AccGyroData == (uint8_t*)&Pumps) {
+		txheader.StdId = Pumps_Frame_StdId;
+		can_tx_mailbox = CAN_TX_MAILBOX2;
+	}
+	else txheader.StdId = 0x1;
+
+	if ((Size>=0)&&(Size<=8)) txheader.DLC = Size;
 	txheader.IDE = CAN_ID_STD;
 	txheader.RTR = CAN_RTR_DATA;
 	txheader.ExtId = 0;
-	txheader.TransmitGlobalTime = ENABLE;
+	txheader.TransmitGlobalTime = DISABLE;
 
-	uint32_t canmai=1;
-	HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData, &canmai);
+	HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData, &can_tx_mailbox);
 
 	//HAL_StatusTypeDef status;
 	//	int freetx = 0;
@@ -60,12 +76,18 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 }
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
 {
-	if (++CAN_LED_Turn_Count%50==0) HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
+	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
 }
 void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
 {
 	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
 }
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
+}
+
+
 void HAL_CAN_TxMailbox0AbortCallback(CAN_HandleTypeDef *hcan)
 {
 	HAL_GPIO_TogglePin(WARNING_GPIO_Port, WARNING_Pin);

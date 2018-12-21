@@ -11,6 +11,12 @@
 #include "main.h"
 
 
+#define Acc_Frame_StdId          (uint32_t)0x0cc
+#define Pumps_Frame_StdId        (uint32_t)0x111
+#define DPP_Frame_StdId          (uint32_t)0x0dd
+
+
+
 void HSOW2_CAN_Transmit(uint8_t *AccGyroData, uint16_t Size);
 void HSOW2_CAN_Init(void);
 
