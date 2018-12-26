@@ -12,7 +12,7 @@
 
 
 #define Acc_Frame_StdId          (uint32_t)0x0cc
-#define Pumps_Frame_StdId        (uint32_t)0x111
+#define Bumps_Frame_StdId        (uint32_t)0x111
 #define DPP_Frame_StdId          (uint32_t)0x0dd
 
 

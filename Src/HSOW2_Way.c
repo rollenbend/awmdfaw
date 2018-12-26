@@ -8,7 +8,7 @@
 
 DppTimSampleTypeDef DppStruct;
 AveragesAccTypeDef  AverageAcc;
-PumpsTypeDef        Pumps;
+BumpsTypeDef        Bumps;
 
 extern float  SumAccSamples;
 extern int    CalculateCount;
@@ -26,7 +26,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		HSOW2_CAN_Transmit((uint8_t*)&AverageAcc, sizeof(AverageAcc));
 		Reset_AverageAcc();
 
-		HSOW2_CAN_Transmit((uint8_t*)&Pumps, sizeof(Pumps));
+		HSOW2_CAN_Transmit((uint8_t*)&Bumps, sizeof(Bumps));
 		Reset_Pumps();
 	}
 }
@@ -57,6 +57,6 @@ void Reset_AverageAcc(void)
 }
 void Reset_Pumps(void)
 {
-	Pumps.MinPump = 32000;
-	Pumps.MaxPump = -32000;
+	Bumps.MinBump = 32000;
+	Bumps.MaxBump = -32000;
 }

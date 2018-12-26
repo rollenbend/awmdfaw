@@ -22,9 +22,9 @@ typedef struct {
 } AveragesAccTypeDef;
 
 typedef struct {
-		int16_t MinPump;   // minimal vertical motion relatively rail level (in micrometers)
-		int16_t MaxPump;   // maximum vertical motion relatively rail level (in micrometers)
-} PumpsTypeDef;
+		int16_t MinBump;   // minimal vertical motion relatively rail level (in micrometers)
+		int16_t MaxBump;   // maximum vertical motion relatively rail level (in micrometers)
+} BumpsTypeDef;
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;

@@ -9,7 +9,7 @@
 extern CAN_HandleTypeDef hcan;
 extern DppTimSampleTypeDef DppStruct;
 extern AveragesAccTypeDef  AverageAcc;
-extern PumpsTypeDef        Pumps;
+extern BumpsTypeDef        Bumps;
 uint32_t CAN_LED_Turn_Count=0;
 
 void HSOW2_CAN_Transmit(uint8_t *AccGyroData, uint16_t Size)
@@ -25,8 +25,8 @@ void HSOW2_CAN_Transmit(uint8_t *AccGyroData, uint16_t Size)
 		txheader.StdId = Acc_Frame_StdId;
 		can_tx_mailbox = CAN_TX_MAILBOX1;
 	}
-	else if (AccGyroData == (uint8_t*)&Pumps) {
-		txheader.StdId = Pumps_Frame_StdId;
+	else if (AccGyroData == (uint8_t*)&Bumps) {
+		txheader.StdId = Bumps_Frame_StdId;
 		can_tx_mailbox = CAN_TX_MAILBOX2;
 	}
 	else txheader.StdId = 0x1;

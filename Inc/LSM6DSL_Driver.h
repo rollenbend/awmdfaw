@@ -91,5 +91,6 @@ void Got_Error(void);
 void LSM6DSL_Set_ODR(uint8_t Acc_ODR, uint8_t Gyro_ODR);
 void LSM6DSL_Software_Reset(void);
 void LSM6DSL_FIFO_CTRL(void);
+void LSM6DSL_Int2_Manage(void);
 void DMA1_Channel2_Cplt_CallBack(DMA_HandleTypeDef * _hdma);
 #endif /* LSM6DSL_DRIVER_H_ */

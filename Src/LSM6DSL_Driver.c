@@ -31,10 +31,22 @@ void LSM6DSL_Read_data(void)
 void LSM6DSL_Init(void)
 {
 	LSM6DSL_Software_Reset();
-	LSM6DSL_Set_ODR(ACC_ODR_833|ACC_SCALE_16G, GYRO_ODR_833|GYRO_SCALE_500dps);
+	LSM6DSL_Int2_Manage();
+	LSM6DSL_Set_ODR(ACC_ODR_6k66|ACC_SCALE_16G, GYRO_ODR_1k66|GYRO_SCALE_245dps);
 	//LSM6DSL_FIFO_CTRL();
 }
+void LSM6DSL_Int2_Manage(void)
+ {
+	uint8_t INT2_CR[2] = { 0x0e, 0x00 }; // disable int2
+	CS_OFF;
+	HAL_SPI_Transmit(&hspi1, INT2_CR, sizeof(INT2_CR), 0x1000);
+	CS_ON;
 
+	INT2_CR[1] = 0x02; // gyro data ready int2 enable
+	CS_OFF;
+	HAL_SPI_Transmit(&hspi1, INT2_CR, sizeof(INT2_CR), 0x1000);
+	CS_ON;
+}
 void LSM6DSL_Set_ODR(uint8_t Acc_ODR, uint8_t Gyro_ODR)
 {
 	uint8_t CR1_2[3]={0x10, Acc_ODR, Gyro_ODR}; // ставим выдачу в 833Гц для аксела и гиро. чувств 16g и 500dps
@@ -46,7 +58,7 @@ void LSM6DSL_Set_ODR(uint8_t Acc_ODR, uint8_t Gyro_ODR)
 
 void LSM6DSL_Software_Reset(void)
 {
-	uint8_t CR3[2]={0x12, 0x01};  // SW_RESET=1 сброс настроек датчика, чтобы предыдущие действия не мешались
+	uint8_t CR3[2]={0x12, 0x85};  // SW_RESET=1 сброс настроек датчика, чтобы предыдущие действия не мешались
 
 	CS_OFF;
 	HAL_SPI_Transmit(&hspi1, CR3, sizeof(CR3), 0x1000);
@@ -77,18 +89,20 @@ void Is_this_LSM6DSL(void)
 }
 
 
-void Got_Error(void)
-{
-	for (int i=0; i<15; i++){
-		HAL_GPIO_TogglePin(WARNING_GPIO_Port, WARNING_Pin);
-		HAL_Delay(200);
-	}
-}
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if (GPIO_Pin == GPIO_PIN_2) // LSM6DSL int2
-		HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
+	if (GPIO_Pin == GPIO_PIN_2) // LSM6DSL int2 gyro ready data interrupt
+	{
+		uint8_t Addrreadaccgyro = GYRO_OUT_Z_L | ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтения = 1(0x80)
+		int16_t gyrodata = 0;
+
+		CS_OFF;
+		HAL_SPI_Transmit(&hspi1, &Addrreadaccgyro, 1, 0x100);
+		HAL_SPI_Receive(&hspi1, (uint8_t*) &gyrodata, sizeof(gyrodata), 0x100);
+		CS_ON;
+
+		IntegrateGyroData(gyrodata);
+	}
 	if (GPIO_Pin == GPIO_PIN_3) // LSM6DSL int1
 			HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
 }
@@ -106,7 +120,13 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 //	if (LSM6DSL_Answer!=WHO_AM_I_Answer)
 //			Got_Error();
 }
-
+void Got_Error(void)
+{
+	for (int i=0; i<15; i++){
+		HAL_GPIO_TogglePin(WARNING_GPIO_Port, WARNING_Pin);
+		HAL_Delay(200);
+	}
+}
 void LSM6DSL_FIFO_CTRL(void)
 {
 	uint8_t CR3[2]={0x12, 0x40};  // it is recommended to set the BDU bit in CTRL3_C (12h) to 1

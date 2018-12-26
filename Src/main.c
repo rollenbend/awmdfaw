@@ -127,7 +127,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  HSOW2_Way_Init();
+//  HSOW2_Way_Init();
 
   LSM6DSL_Init();
   Is_this_LSM6DSL();
@@ -139,8 +139,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	 LSM6DSL_Read_data();
-	// for (int i=0; i<5000; i++) {;}
+	// LSM6DSL_Read_data();
+	 for (int i=0; i<5000; i++) {;}
+
 //	  HAL_Delay(30);
     /* USER CODE END WHILE */
 
