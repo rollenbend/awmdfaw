@@ -27,7 +27,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		Reset_AverageAcc();
 
 		HSOW2_CAN_Transmit((uint8_t*)&Bumps, sizeof(Bumps));
-		Reset_Pumps();
+		Reset_Bumps();
 	}
 }
 
@@ -39,7 +39,7 @@ void HSOW2_Way_Init(void)
 	DppStruct.NowTime = 0;
 
 	Reset_AverageAcc();
-	Reset_Pumps();
+	Reset_Bumps();
 
 	HAL_TIM_Base_Start(&htim2);
 	HAL_TIM_Base_Start_IT(&htim1);
@@ -49,14 +49,14 @@ void HSOW2_Way_Init(void)
 
 void Reset_AverageAcc(void)
 {
-	AverageAcc.MinAcc = 32000;
-	AverageAcc.MaxAcc = -32000;
+	AverageAcc.MinAcc = 32767;
+	AverageAcc.MaxAcc = -32768;
 	AverageAcc.AvrAcc = 0;
 	CalculateCount = 0;
 	SumAccSamples  = 0;
 }
-void Reset_Pumps(void)
+void Reset_Bumps(void)
 {
-	Bumps.MinBump = 32000;
-	Bumps.MaxBump = -32000;
+	Bumps.MinBump = 32767;
+	Bumps.MaxBump = -32768;
 }

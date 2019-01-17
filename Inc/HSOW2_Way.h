@@ -30,6 +30,6 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 void HSOW2_Way_Init(void);
 void Reset_AverageAcc(void);
-void Reset_Pumps(void);
+void Reset_Bumps(void);
 
 #endif /* HSOW2_WAY_H_ */
