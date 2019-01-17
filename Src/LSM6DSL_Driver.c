@@ -9,20 +9,33 @@
 uint32_t LED_Turn_Count=0;
 
 
-void LSM6DSL_Read_data(void)
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	uint8_t Addrreadaccgyro = GYRO_OUT_Z_L|ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтени€ = 1(0x80)
-	AccGyroSampleTypeDef accgyro;
+	if (GPIO_Pin == GPIO_PIN_2) // LSM6DSL int2 gyro ready data interrupt
+	{
+		uint8_t Addrreadgyro = GYRO_OUT_Z_L | ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтени€ = 1(0x80)
+		int16_t gyrodata = 0;
 
-	CS_OFF;
-	HAL_SPI_Transmit(&hspi1, &Addrreadaccgyro, 1, 0x100);
-	HAL_SPI_Receive(&hspi1, (uint8_t*)&accgyro, sizeof(accgyro), 0x100);
-	CS_ON;
+		CS_OFF;
+		HAL_SPI_Transmit(&hspi1, &Addrreadgyro, 1, 0x100);
+		HAL_SPI_Receive(&hspi1, (uint8_t*) &gyrodata, sizeof(gyrodata), 0x100);
+		CS_ON;
 
-	CalculateAccSample(accgyro.accdata);
-	IntegrateGyroData(accgyro.gyrodata);
+		IntegrateGyroData(gyrodata);
+	}
+	if (GPIO_Pin == GPIO_PIN_3) // LSM6DSL int1
+	{
+		uint8_t Addrreadacc = ACC_OUT_X_L | ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтени€ = 1(0x80)
+		int16_t accdata = 0;
 
-	if (++LED_Turn_Count%10000==0) HAL_GPIO_TogglePin(BLUE_IMU_GPIO_Port, BLUE_IMU_Pin);
+		CS_OFF;
+		HAL_SPI_Transmit(&hspi1, &Addrreadacc, 1, 0x100);
+		HAL_SPI_Receive(&hspi1, (uint8_t*) &accdata, sizeof(accdata), 0x100);
+		CS_ON;
+
+		CalculateAccSample(accdata);
+	}
+
 }
 
 
@@ -32,6 +45,7 @@ void LSM6DSL_Init(void)
 {
 	LSM6DSL_Software_Reset();
 	LSM6DSL_Int2_Manage();
+	LSM6DSL_Int1_Manage();
 	LSM6DSL_Set_ODR(ACC_ODR_6k66|ACC_SCALE_16G, GYRO_ODR_1k66|GYRO_SCALE_245dps);
 	//LSM6DSL_FIFO_CTRL();
 }
@@ -47,9 +61,21 @@ void LSM6DSL_Int2_Manage(void)
 	HAL_SPI_Transmit(&hspi1, INT2_CR, sizeof(INT2_CR), 0x1000);
 	CS_ON;
 }
+void LSM6DSL_Int1_Manage(void)
+ {
+	uint8_t INT1_CR[2] = { 0x0d, 0x00 }; // disable int1
+	CS_OFF;
+	HAL_SPI_Transmit(&hspi1, INT1_CR, sizeof(INT1_CR), 0x1000);
+	CS_ON;
+
+	INT1_CR[1] = 0x01; // Acc data ready int1 enable
+	CS_OFF;
+	HAL_SPI_Transmit(&hspi1, INT1_CR, sizeof(INT1_CR), 0x1000);
+	CS_ON;
+}
 void LSM6DSL_Set_ODR(uint8_t Acc_ODR, uint8_t Gyro_ODR)
 {
-	uint8_t CR1_2[3]={0x10, Acc_ODR, Gyro_ODR}; // ставим выдачу в 833√ц дл€ аксела и гиро. чувств 16g и 500dps
+	uint8_t CR1_2[3]={0x10, Acc_ODR, Gyro_ODR}; // ставим выдачу в 6.66k√ц дл€ аксела и 1.66k гиро. чувств 16g и 245dps
 
 	CS_OFF;
 	HAL_SPI_Transmit(&hspi1, CR1_2, sizeof(CR1_2), 0x1000);
@@ -89,23 +115,24 @@ void Is_this_LSM6DSL(void)
 }
 
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+void LSM6DSL_Read_data(void)
 {
-	if (GPIO_Pin == GPIO_PIN_2) // LSM6DSL int2 gyro ready data interrupt
-	{
-		uint8_t Addrreadaccgyro = GYRO_OUT_Z_L | ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтени€ = 1(0x80)
-		int16_t gyrodata = 0;
+	uint8_t Addrreadaccgyro = GYRO_OUT_Z_L|ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтени€ = 1(0x80)
+	AccGyroSampleTypeDef accgyro;
 
-		CS_OFF;
-		HAL_SPI_Transmit(&hspi1, &Addrreadaccgyro, 1, 0x100);
-		HAL_SPI_Receive(&hspi1, (uint8_t*) &gyrodata, sizeof(gyrodata), 0x100);
-		CS_ON;
+	CS_OFF;
+	HAL_SPI_Transmit(&hspi1, &Addrreadaccgyro, 1, 0x100);
+	HAL_SPI_Receive(&hspi1, (uint8_t*)&accgyro, sizeof(accgyro), 0x100);
+	CS_ON;
 
-		IntegrateGyroData(gyrodata);
-	}
-	if (GPIO_Pin == GPIO_PIN_3) // LSM6DSL int1
-			HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
+	CalculateAccSample(accgyro.accdata);
+	IntegrateGyroData(accgyro.gyrodata);
+
+	if (++LED_Turn_Count%10000==0) HAL_GPIO_TogglePin(BLUE_IMU_GPIO_Port, BLUE_IMU_Pin);
 }
+
+
+
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
