@@ -7,21 +7,23 @@
 #include "LSM6DSL_Driver.h"
 
 uint32_t LED_Turn_Count=0;
-
+uint8_t FLAGGYRO = 0;
+int16_t gyrodata = 0;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == GPIO_PIN_2) // LSM6DSL int2 gyro ready data interrupt
 	{
 		uint8_t Addrreadgyro = GYRO_OUT_Z_L | ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтения = 1(0x80)
-		int16_t gyrodata = 0;
+//		int16_t gyrodata = 0;
 
 		CS_OFF;
 		HAL_SPI_Transmit(&hspi1, &Addrreadgyro, 1, 0x100);
 		HAL_SPI_Receive(&hspi1, (uint8_t*) &gyrodata, sizeof(gyrodata), 0x100);
 		CS_ON;
 
-		IntegrateGyroData(gyrodata);
+//		IntegrateGyroData(gyrodata);
+		FLAGGYRO = 1;
 	}
 	if (GPIO_Pin == GPIO_PIN_3) // LSM6DSL int1
 	{

@@ -90,7 +90,8 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+extern uint8_t FLAGGYRO;
+extern int16_t gyrodata;
 /* USER CODE END 0 */
 
 /**
@@ -127,12 +128,13 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
-
+  Reset_AverageAcc();
+  Reset_Bumps();
+  HSOW2_CAN_Init();
   LSM6DSL_Init();
   Is_this_LSM6DSL();
-HSOW2_Way_Init();
-  HSOW2_CAN_Init();
+  HSOW2_Way_Init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -140,8 +142,11 @@ HSOW2_Way_Init();
   while (1)
   {
 	// LSM6DSL_Read_data();
-	 for (int i=0; i<5000; i++) {;}
-
+	// for (int i=0; i<5000; i++) {;}
+	  if (FLAGGYRO) {
+		  IntegrateGyroData(gyrodata);
+		  FLAGGYRO = 0;
+	  }
 //	  HAL_Delay(30);
     /* USER CODE END WHILE */
 

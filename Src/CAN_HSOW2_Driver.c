@@ -71,8 +71,8 @@ void HSOW2_CAN_Transmit(uint8_t *AccGyroData, uint16_t Size)
 
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 {
-	hcan->ErrorCode;
-	HAL_GPIO_TogglePin(WARNING_GPIO_Port, WARNING_Pin);
+	if (hcan->ErrorCode)
+		HAL_GPIO_TogglePin(WARNING_GPIO_Port, WARNING_Pin);
 }
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
 {

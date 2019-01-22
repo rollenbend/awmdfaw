@@ -16,7 +16,7 @@ extern int    CalculateCount;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim1){
-		HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
+		//HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
 
 		DppStruct.DPP++;
 		DppStruct.NowTime = TIM2 -> CNT;
@@ -38,10 +38,12 @@ void HSOW2_Way_Init(void)
 	DppStruct.DPP = 0;
 	DppStruct.NowTime = 0;
 
-	Reset_AverageAcc();
-	Reset_Bumps();
+//	Reset_AverageAcc();
+//	Reset_Bumps();
 
 	HAL_TIM_Base_Start(&htim2);
+//	HAL_TIM_Base_Start_IT(&htim1);
+//	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
 	HAL_TIM_Base_Start_IT(&htim1);
 }
 
