@@ -11,8 +11,8 @@
 extern AveragesAccTypeDef AverageAcc;
 extern BumpsTypeDef       Bumps;
 
-float    SumAccSamples   = 0;
-int      CalculateCount  = 0;
+float    SumAccSamples[3] = {0};
+int      CalculateCount   = 0;
 
 int16_t GyroArray[SizeArray] = {0};
 uint32_t GyroCount = 0;
@@ -23,7 +23,7 @@ void IntegrateGyroData(int16_t GyroValue)
 {
 	HAL_GPIO_WritePin(YELLOW_GPIO_Port,YELLOW_Pin, ENABLE);
 	GyroArray[GyroCount++ % SizeArray] = GyroValue; // ring buffer
-	if ((GyroValue>GyroEdgeWagonRest||GyroValue<-GyroEdgeWagonRest) && (Bump_impuls == 0)) GyroCount=0;
+	if ((Bump_impuls == 0) && (GyroValue>GyroEdgeWagonRest||GyroValue<-GyroEdgeWagonRest)) GyroCount=0;
 
 	if (GyroCount >= SizeArray) {
 		AvrGyro = 0;
@@ -53,18 +53,32 @@ void IntegrateGyroData(int16_t GyroValue)
 }
 
 
-void CalculateAccSample(int16_t AccValue)
+void CalculateAccSample(int16_t* AccValue)
 {
-	float AccSample = 0;
-	AccSample = ((float)AccValue)/LSM_Acc_Sensitivity_16g/LSM_Acc_Divider; // change value to G-scale
+	float AccSample[3] = {0};
+	for (int i=0; i<3; i++)
+	{
+		AccSample[i] = ((float)AccValue[i])/LSM_Acc_Sensitivity_16g/LSM_Acc_Divider; // change value to G-scale
+	}
 
-	if (AverageAcc.MinAcc>(int16_t)AccSample) AverageAcc.MinAcc = (int16_t)AccSample;
-	if (AverageAcc.MaxAcc<(int16_t)AccSample) AverageAcc.MaxAcc = (int16_t)AccSample;
+	if (AverageAcc.MinAcc>(int16_t)AccSample[0]) AverageAcc.MinAcc = (int16_t)AccSample[0];
+	if (AverageAcc.MaxAcc<(int16_t)AccSample[0]) AverageAcc.MaxAcc = (int16_t)AccSample[0];
 
-	SumAccSamples+=AccSample;
-	CalculateCount++;
+	for (int i=0; i<3; i++)
+	{
+		SumAccSamples[i] += AccSample[i]; // sum acc for period 25 sm
+	}
+	CalculateCount++; // sum counter
 }
 
+//short  MinVertAccOnPeriod = 0;
+//short  MaxVertAccOnPeriod = 0;
+//short MinVertBumpOnPeriod = 0;
+//short MaxVertBumpOnPeriod = 0;
+//int16_t Get_Min_Acc(void)
+//{
+//	return MinVertAccOnPeriod;
+//}
 
 //float        LastMinAccSample = 0xffffff;
 //float        LastMaxAccSample = -0xffffff;

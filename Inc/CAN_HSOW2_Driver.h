@@ -23,7 +23,7 @@ void HSOW2_CAN_Init(void);
 
 
 
-
+#define MAX_BTS_IN_CAN_MSG 8
 
 
 

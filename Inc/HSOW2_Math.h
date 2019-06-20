@@ -22,7 +22,7 @@
 //#define LSM_Gyro_Datarate_1k66         	 (float)1660
 //#define Grad_in_radian   				 (float)57.295779
 
-void CalculateAccSample(int16_t AccValue);
+void CalculateAccSample(int16_t* AccValue);
 void IntegrateGyroData(int16_t GyroValue);
 
 

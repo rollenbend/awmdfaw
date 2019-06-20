@@ -31,44 +31,41 @@ void HSOW2_CAN_Transmit(uint8_t *AccGyroData, uint16_t Size)
 	}
 	else txheader.StdId = 0x1;
 
-	if ((Size>=0)&&(Size<=8)) txheader.DLC = Size;
+	txheader.DLC = Size % (MAX_BTS_IN_CAN_MSG + 1);
 	txheader.IDE = CAN_ID_STD;
 	txheader.RTR = CAN_RTR_DATA;
 	txheader.ExtId = 0;
 	txheader.TransmitGlobalTime = DISABLE;
 
 	HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData, &can_tx_mailbox);
-
-	//HAL_StatusTypeDef status;
-	//	int freetx = 0;
-	//	int txpending = 0;
-//	if (Size>6) {
-//		for (uint16_t s=0; s<Size; s+=6 ) {
-//			txheader.StdId = 0x111;
-//			txheader.DLC = 6;
-//			HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+s, can_tx_mailbox+((s/6)%3));
-//		}
-//		txheader.StdId = 0x111;
-//		txheader.DLC = Size%6;
-//		if (txheader.DLC != 0) HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+(Size/6), can_tx_mailbox);
-//	} else {
-//		txheader.StdId = 0x111;
-//		txheader.DLC = Size;
-//		HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData, can_tx_mailbox);
-//	}
-
-//	txpending = HAL_CAN_IsTxMessagePending(&hcan, can_tx_mailbox[0]);
-//	freetx = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);
-//	status = HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData, can_tx_mailbox);
-//	status = HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+6, can_tx_mailbox+1);
-////	status = HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+6, can_tx_mailbox+2);
-//	if (status) Got_Error();
-//	freetx = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);
-//	if (!freetx) HAL_GPIO_TogglePin(WARNING_GPIO_Port, WARNING_Pin);
-//	txpending = HAL_CAN_IsTxMessagePending(&hcan, can_tx_mailbox[0]);
-//	if (txpending) HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
 }
-
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	uint32_t rxfifo =    CAN_RX_FIFO0;
+	CAN_RxHeaderTypeDef  rxheader;
+	uint8_t rxdata[8] =  {0};
+	HAL_CAN_GetRxMessage(hcan, rxfifo, &rxheader, rxdata);
+	if (rxheader.StdId == 0x03)
+		switch (rxdata[0])
+		{
+		case 0: HSOW2_Start_Encoder_Work();
+		break;
+		case 1: HSOW2_Start_Imitation_DPP(36); // 250 km/h
+		break;
+		case 2: HSOW2_Start_Imitation_DPP(72); // 125 km/h
+		break;
+		case 3: HSOW2_Start_Imitation_DPP(144); // 62.5 km/h
+		break;
+		case 4: HSOW2_Start_Imitation_DPP(288); // 31.25 km/h
+		break;
+		case 5: HSOW2_Start_Imitation_DPP(577); // 15.6 km/h
+		break;
+		case 6: HSOW2_Start_Imitation_DPP(1125); // 8 km/h
+		break;
+		case 7: HSOW2_Start_Imitation_DPP(2250); // 4 km/h
+		break;
+		}
+}
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 {
 	if (hcan->ErrorCode)
@@ -76,15 +73,15 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 }
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
 {
-	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
+//	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
 }
 void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
 {
-	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
+//	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
 }
 void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
 {
-	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
+//	HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
 }
 
 
@@ -115,16 +112,43 @@ void HSOW2_CAN_InitFilter(void)
 }
 void HSOW2_CAN_Init(void)
 {
-	HAL_CAN_StateTypeDef canstate = HAL_CAN_GetState(&hcan);
-
 	HSOW2_CAN_InitFilter();
-	HAL_CAN_ActivateNotification(&hcan, CAN_IT_TX_MAILBOX_EMPTY); // |CAN_IT_BUSOFF
-	canstate = HAL_CAN_GetState(&hcan);
-	if (canstate-1) HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
+	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_TX_MAILBOX_EMPTY);
 	HAL_CAN_Start(&hcan);
 
-	canstate = HAL_CAN_GetState(&hcan);
-	if (canstate-2) HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
 }
 
+//HAL_StatusTypeDef status;
+//	int freetx = 0;
+//	int txpending = 0;
+//	if (Size>6) {
+//		for (uint16_t s=0; s<Size; s+=6 ) {
+//			txheader.StdId = 0x111;
+//			txheader.DLC = 6;
+//			HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+s, can_tx_mailbox+((s/6)%3));
+//		}
+//		txheader.StdId = 0x111;
+//		txheader.DLC = Size%6;
+//		if (txheader.DLC != 0) HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+(Size/6), can_tx_mailbox);
+//	} else {
+//		txheader.StdId = 0x111;
+//		txheader.DLC = Size;
+//		HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData, can_tx_mailbox);
+//	}
 
+//	txpending = HAL_CAN_IsTxMessagePending(&hcan, can_tx_mailbox[0]);
+//	freetx = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);
+//	status = HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData, can_tx_mailbox);
+//	status = HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+6, can_tx_mailbox+1);
+////	status = HAL_CAN_AddTxMessage(&hcan, &txheader, AccGyroData+6, can_tx_mailbox+2);
+//	if (status) Got_Error();
+//	freetx = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);
+//	if (!freetx) HAL_GPIO_TogglePin(WARNING_GPIO_Port, WARNING_Pin);
+//	txpending = HAL_CAN_IsTxMessagePending(&hcan, can_tx_mailbox[0]);
+//	if (txpending) HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
+
+//	HAL_CAN_StateTypeDef canstate = HAL_CAN_GetState(&hcan);
+//canstate = HAL_CAN_GetState(&hcan);
+//	if (canstate-1) HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);
+//	canstate = HAL_CAN_GetState(&hcan);
+//	if (canstate-2) HAL_GPIO_TogglePin(YELLOW_GPIO_Port, YELLOW_Pin);

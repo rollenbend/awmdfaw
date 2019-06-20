@@ -25,14 +25,18 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 //		IntegrateGyroData(gyrodata);
 		FLAGGYRO = 1;
 	}
-	if (GPIO_Pin == GPIO_PIN_3) // LSM6DSL int1
+	if (GPIO_Pin == GPIO_PIN_3) // LSM6DSL int1 acc
 	{
-		uint8_t Addrreadacc = ACC_OUT_X_L | ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтения = 1(0x80)
-		int16_t accdata = 0;
+		uint8_t Addrreadacc = ACC_OUT_X_L | ReadCommand; // начинаем читать с ACC_OUT_X_L (28h), бит чтения = 1(0x80)
+		/*  [0] - X axis = vertical (at wagon)
+		 *  [1] - Y axis = along (at wagon)
+		 *  [2] - Z axis = across (at wagon)
+		 */
+		int16_t accdata[3] = {0};
 
 		CS_OFF;
 		HAL_SPI_Transmit(&hspi1, &Addrreadacc, 1, 0x100);
-		HAL_SPI_Receive(&hspi1, (uint8_t*) &accdata, sizeof(accdata), 0x100);
+		HAL_SPI_Receive(&hspi1, (uint8_t*) accdata, sizeof(accdata), 0x100);
 		CS_ON;
 
 		CalculateAccSample(accdata);
@@ -46,8 +50,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void LSM6DSL_Init(void)
 {
 	LSM6DSL_Software_Reset();
-	LSM6DSL_Int2_Manage();
-	LSM6DSL_Int1_Manage();
+	LSM6DSL_Int2_Manage(); // gyro irq
+	LSM6DSL_Int1_Manage(); // Acc irq
 	LSM6DSL_Set_ODR(ACC_ODR_6k66|ACC_SCALE_16G, GYRO_ODR_1k66|GYRO_SCALE_245dps);
 	//LSM6DSL_FIFO_CTRL();
 }
@@ -119,18 +123,18 @@ void Is_this_LSM6DSL(void)
 
 void LSM6DSL_Read_data(void)
 {
-	uint8_t Addrreadaccgyro = GYRO_OUT_Z_L|ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтения = 1(0x80)
-	AccGyroSampleTypeDef accgyro;
-
-	CS_OFF;
-	HAL_SPI_Transmit(&hspi1, &Addrreadaccgyro, 1, 0x100);
-	HAL_SPI_Receive(&hspi1, (uint8_t*)&accgyro, sizeof(accgyro), 0x100);
-	CS_ON;
-
-	CalculateAccSample(accgyro.accdata);
-	IntegrateGyroData(accgyro.gyrodata);
-
-	if (++LED_Turn_Count%10000==0) HAL_GPIO_TogglePin(BLUE_IMU_GPIO_Port, BLUE_IMU_Pin);
+//	uint8_t Addrreadaccgyro = GYRO_OUT_Z_L|ReadCommand; // начинаем читать с GYRO_OUT_Z_L (26h), бит чтения = 1(0x80)
+//	AccGyroSampleTypeDef accgyro;
+//
+//	CS_OFF;
+//	HAL_SPI_Transmit(&hspi1, &Addrreadaccgyro, 1, 0x100);
+//	HAL_SPI_Receive(&hspi1, (uint8_t*)&accgyro, sizeof(accgyro), 0x100);
+//	CS_ON;
+//
+//	CalculateAccSample(accgyro.accdata);
+//	IntegrateGyroData(accgyro.gyrodata);
+//
+//	if (++LED_Turn_Count%10000==0) HAL_GPIO_TogglePin(BLUE_IMU_GPIO_Port, BLUE_IMU_Pin);
 }
 
 

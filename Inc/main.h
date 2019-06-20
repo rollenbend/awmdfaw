@@ -56,6 +56,7 @@ extern "C" {
 #include "CAN_HSOW2_Driver.h"
 #include "HSOW2_Way.h"
 #include "HSOW2_Math.h"
+#include "commands.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -70,7 +71,8 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+void ini_enc_tim(void);
+void ini_imit_tim(void);
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -93,8 +95,6 @@ void Error_Handler(void);
 #define SPI_CS_GPIO_Port GPIOA
 #define BLUE_IMU_Pin GPIO_PIN_0
 #define BLUE_IMU_GPIO_Port GPIOB
-#define GREEN_Pin GPIO_PIN_2
-#define GREEN_GPIO_Port GPIOB
 #define YELLOW_Pin GPIO_PIN_10
 #define YELLOW_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
