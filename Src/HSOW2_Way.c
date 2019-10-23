@@ -58,7 +58,7 @@ void Incr_DPP(void)
 	DppFrame.DPP += 5;
 	DppFrame.speed = AverageAcc.WagonSpeed;
 	DppFrame.timer = TIM2 -> CNT;
-	DppFrame.status = 0;
+	DppFrame.status = Get_command_code();
 	DppFrame.reply = 0;
 	DppFrame.MinAccXaxis = AverageAcc.MinAcc;
 	DppFrame.MaxAccXaxis = AverageAcc.MaxAcc;
@@ -114,7 +114,7 @@ void HSOW2_Way_Init(void)
 	DppStruct.DPP = 0;
 	DppStruct.NowTime = 0;
 
-	HAL_TIM_Base_Start(&htim2);
+	HAL_TIM_Base_Start(&htim2); // time in microseconds
 
 #ifdef IMITATION
 //	HSOW2_Start_Imitation_DPP(100);

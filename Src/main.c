@@ -144,6 +144,8 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_Delay(100);
   Reset_AverageAcc();
   Reset_Bumps();
 
@@ -152,7 +154,6 @@ int main(void)
  // HSOW2_CAN_Init();
   LSM6DSL_Init();
   Is_this_LSM6DSL();
-//  HAL_Delay(1000);
   HSOW2_Way_Init();
 
 

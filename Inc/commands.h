@@ -17,6 +17,19 @@ typedef struct{
 } SENSOR_COMMANDS;
 #pragma pack(pop)
 
+typedef enum {
+	WantSyncro,
+	WantSize,
+	WantCode,
+	WantCs
+} PROTOCOL;
+
+#define SyncroByte 	 	0x53
+#define SizeByte  		0x01
+
+uint8_t Get_command_code(void);
 void start_cmd_receiving(UART_HandleTypeDef *huart);
+void DecodingCmd(uint8_t Bt);
+void Execute_cmd(uint8_t Code);
 
 #endif /* COMMANDS_H_ */

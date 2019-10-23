@@ -33,12 +33,14 @@ typedef struct {
 typedef struct {
 	uint8_t syncro;
 	uint8_t size;
-	uint32_t DPP;
 
+
+	uint32_t DPP;
 	int16_t speed;
 	uint32_t timer;
+
 	uint8_t status;
-	uint8_t reply;
+	uint8_t reply; // remove because don't need
 
 	int16_t MinAccXaxis;  		 // minimal acc sample by 40 pulses encoder
 	int16_t MaxAccXaxis;  		 // maximum acc sample by 40 pulses encoder
